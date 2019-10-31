@@ -4,6 +4,7 @@ from pygame.locals import *
 FPS = 10
 WINDOWWIDTH = 640
 WINDOWHEIGHT = 480
+#pr3
 SPACESIZE = 50
 BOARDWIDTH = 8
 BOARDHEIGHT = 8
