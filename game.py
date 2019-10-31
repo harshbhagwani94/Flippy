@@ -1,6 +1,6 @@
 import random, sys, pygame, time, copy
 from pygame.locals import *
-
+#pr2
 FPS = 10
 WINDOWWIDTH = 640
 WINDOWHEIGHT = 480
