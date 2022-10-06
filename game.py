@@ -27,34 +27,29 @@ def main():
             break
 
 
-def run_game():
-
-    mainBoard = get_new_board()
-    resetBoard(mainBoard)
-    showHints = False
+def start_game(main_board, player_tile=None, computer_tile=None):
+    show_hints = False
     turn = random.choice(['computer', 'player'])
-
-    draw_board(mainBoard)
-    playerTile, computerTile = enter_player_tile()
 
     new_game_surf = FONT.render('New Game', True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')), (config.getint('TEXTBGCOLOR2','r'),config.getint('TEXTBGCOLOR2','g'),config.getint('TEXTBGCOLOR2','b')))
     new_game_rect = new_game_surf.get_rect()
     new_game_rect.topright = (config.getint('int_var','WINDOWWIDTH') - 8, 10)
-    hintsSurf = FONT.render('Hints', True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')), (config.getint('TEXTBGCOLOR2','r'),config.getint('TEXTBGCOLOR2','g'),config.getint('TEXTBGCOLOR2','b')))
-    hintsRect = hintsSurf.get_rect()
-    hintsRect.topright = (config.getint('int_var','WINDOWWIDTH') - 8, 40)
+
+    hints_surf = FONT.render('Hints', True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')), (config.getint('TEXTBGCOLOR2','r'),config.getint('TEXTBGCOLOR2','g'),config.getint('TEXTBGCOLOR2','b')))
+    hints_rect = hints_surf.get_rect()
+    hints_rect.topright = (config.getint('int_var','WINDOWWIDTH') - 8, 40)
 
     while True:
         if turn == 'player':
-            if get_valid_moves(mainBoard, playerTile) == []:
+            if get_valid_moves(main_board, player_tile) == []:
                 break
             movexy = None
             while movexy == None:
 
-                if showHints:
-                    boardToDraw = get_board_with_valid_moves(mainBoard, playerTile)
+                if show_hints:
+                    boardToDraw = get_board_with_valid_moves(main_board, player_tile)
                 else:
-                    boardToDraw = mainBoard
+                    boardToDraw = main_board
 
                 check_for_quit()
                 for event in pygame.event.get(): # event handling loop
@@ -62,89 +57,106 @@ def run_game():
                         mousex, mousey = event.pos
                         if new_game_rect.collidepoint( (mousex, mousey) ):
                             return True
-                        elif hintsRect.collidepoint( (mousex, mousey) ):
-                            showHints = not showHints
+                        elif hints_rect.collidepoint( (mousex, mousey) ):
+                            show_hints = not show_hints
                         movexy = get_spaced_clicked(mousex, mousey)
-                        if movexy != None and not is_valid_move(mainBoard, playerTile, movexy[0], movexy[1]):
+                        if movexy != None and not is_valid_move(main_board, player_tile, movexy[0], movexy[1]):
                             movexy = None
 
                 draw_board(boardToDraw)
-                draw_info(boardToDraw, playerTile, computerTile, turn)
+                draw_info(boardToDraw, player_tile, computer_tile, turn)
 
                 DISPLAYSURF.blit(new_game_surf, new_game_rect)
-                DISPLAYSURF.blit(hintsSurf, hintsRect)
+                DISPLAYSURF.blit(hints_surf, hints_rect)
 
                 MAINCLOCK.tick(config.getint('int_var','FPS'))
                 pygame.display.update()
 
-            make_move(mainBoard, playerTile, movexy[0], movexy[1], True)
-            if get_valid_moves(mainBoard, computerTile) != []:
+            make_move(main_board, player_tile, movexy[0], movexy[1], True)
+            if get_valid_moves(main_board, computer_tile):
                 turn = 'computer'
 
         else:
-            if get_valid_moves(mainBoard, computerTile) == []:
+            if not get_valid_moves(main_board, computer_tile):
                 break
 
-            draw_board(mainBoard)
-            draw_info(mainBoard, playerTile, computerTile, turn)
+            draw_board(main_board)
+            draw_info(main_board, player_tile, computer_tile, turn)
 
             DISPLAYSURF.blit(new_game_surf, new_game_rect)
-            DISPLAYSURF.blit(hintsSurf, hintsRect)
+            DISPLAYSURF.blit(hints_surf, hints_rect)
 
             pause_until = time.time() + random.randint(5, 15) * 0.1
             while time.time() < pause_until:
                 pygame.display.update()
 
-            x, y = getComputerMove(mainBoard, computerTile)
-            make_move(mainBoard, computerTile, x, y, True)
-            if get_valid_moves(mainBoard, playerTile) != []:
+            x, y = getComputerMove(main_board, computer_tile)
+            make_move(main_board, computer_tile, x, y, True)
+            if get_valid_moves(main_board, player_tile):
                 turn = 'player'
 
-    draw_board(mainBoard)
-    scores = get_score_of_board(mainBoard)
 
-    if scores[playerTile] > scores[computerTile]:
-        text = 'You beat the computer by %s points! Congratulations!' % \
-               (scores[playerTile] - scores[computerTile])
-    elif scores[playerTile] < scores[computerTile]:
-        text = 'You lost. The computer beat you by %s points.' % \
-               (scores[computerTile] - scores[playerTile])
-    else:
-        text = 'The game was a tie!'
+def check_exit(text):
+    text_surf = FONT.render(text, True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')), (config.getint('TEXTBGCOLOR1','r'),config.getint('TEXTBGCOLOR1','g'),config.getint('TEXTBGCOLOR1','b')))
+    text_rect = text_surf.get_rect()
+    text_rect.center = (int(config.getint('int_var','WINDOWWIDTH') / 2), int(config.getint('int_var','WINDOWHEIGHT') / 2))
+    DISPLAYSURF.blit(text_surf, text_rect)
 
-    textSurf = FONT.render(text, True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')), (config.getint('TEXTBGCOLOR1','r'),config.getint('TEXTBGCOLOR1','g'),config.getint('TEXTBGCOLOR1','b')))
-    textRect = textSurf.get_rect()
-    textRect.center = (int(config.getint('int_var','WINDOWWIDTH') / 2), int(config.getint('int_var','WINDOWHEIGHT') / 2))
-    DISPLAYSURF.blit(textSurf, textRect)
+    text2surf = BIGFONT.render('Play again?', True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')), (config.getint('TEXTBGCOLOR1','r'),config.getint('TEXTBGCOLOR1','g'),config.getint('TEXTBGCOLOR1','b')))
+    text2rect = text2surf.get_rect()
+    text2rect.center = (int(config.getint('int_var','WINDOWWIDTH') / 2), int(config.getint('int_var','WINDOWHEIGHT') / 2) + 50)
 
-    text2Surf = BIGFONT.render('Play again?', True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')), (config.getint('TEXTBGCOLOR1','r'),config.getint('TEXTBGCOLOR1','g'),config.getint('TEXTBGCOLOR1','b')))
-    text2Rect = text2Surf.get_rect()
-    text2Rect.center = (int(config.getint('int_var','WINDOWWIDTH') / 2), int(config.getint('int_var','WINDOWHEIGHT') / 2) + 50)
-
-    yesSurf = BIGFONT.render('Yes', True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')), (config.getint('TEXTBGCOLOR1','r'),config.getint('TEXTBGCOLOR1','g'),config.getint('TEXTBGCOLOR1','b')))
-    yesRect = yesSurf.get_rect()
-    yesRect.center = (int(config.getint('int_var','WINDOWWIDTH') / 2) - 60, int(config.getint('int_var','WINDOWHEIGHT') / 2) + 90)
+    yes_surf = BIGFONT.render('Yes', True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')), (config.getint('TEXTBGCOLOR1','r'),config.getint('TEXTBGCOLOR1','g'),config.getint('TEXTBGCOLOR1','b')))
+    yes_rect = yes_surf.get_rect()
+    yes_rect.center = (int(config.getint('int_var','WINDOWWIDTH') / 2) - 60, int(config.getint('int_var','WINDOWHEIGHT') / 2) + 90)
 
     # Make "No" button.
-    noSurf = BIGFONT.render('No', True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')), (config.getint('TEXTBGCOLOR1','r'),config.getint('TEXTBGCOLOR1','g'),config.getint('TEXTBGCOLOR1','b')))
-    noRect = noSurf.get_rect()
-    noRect.center = (int(config.getint('int_var','WINDOWWIDTH') / 2) + 60, int(config.getint('int_var','WINDOWHEIGHT') / 2) + 90)
+    no_surf = BIGFONT.render('No', True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')), (config.getint('TEXTBGCOLOR1','r'),config.getint('TEXTBGCOLOR1','g'),config.getint('TEXTBGCOLOR1','b')))
+    no_rect = no_surf.get_rect()
+    no_rect.center = (int(config.getint('int_var','WINDOWWIDTH') / 2) + 60, int(config.getint('int_var','WINDOWHEIGHT') / 2) + 90)
 
     while True:
         check_for_quit()
         for event in pygame.event.get():
             if event.type == MOUSEBUTTONUP:
                 mousex, mousey = event.pos
-                if yesRect.collidepoint( (mousex, mousey) ):
+                if yes_rect.collidepoint( (mousex, mousey) ):
                     return True
-                elif noRect.collidepoint( (mousex, mousey) ):
+                elif no_rect.collidepoint( (mousex, mousey) ):
                     return False
-        DISPLAYSURF.blit(textSurf, textRect)
-        DISPLAYSURF.blit(text2Surf, text2Rect)
-        DISPLAYSURF.blit(yesSurf, yesRect)
-        DISPLAYSURF.blit(noSurf, noRect)
+        DISPLAYSURF.blit(text_surf, text_rect)
+        DISPLAYSURF.blit(text2surf, text2rect)
+        DISPLAYSURF.blit(yes_surf, yes_rect)
+        DISPLAYSURF.blit(no_surf, no_rect)
         pygame.display.update()
         MAINCLOCK.tick(config.getint('int_var','FPS'))
+
+
+def check_score(scores, player_tile, computer_tile):
+    if scores[player_tile] > scores[computer_tile]:
+        return 'You beat the computer by %s points! Congratulations!' % \
+               (scores[player_tile] - scores[computer_tile])
+    elif scores[player_tile] < scores[computer_tile]:
+        return 'You lost. The computer beat you by %s points.' % \
+               (scores[computer_tile] - scores[player_tile])
+    else:
+        return 'The game was a tie!'
+
+def run_game():
+    main_board = get_new_board()
+    resetBoard(main_board)
+
+    draw_board(main_board)
+    player_tile, computer_tile = enter_player_tile()
+
+    start_game(main_board, player_tile, computer_tile)
+
+    draw_board(main_board)
+    scores = get_score_of_board(main_board)
+
+    text = check_score(scores, player_tile, computer_tile)
+
+    check_exit(text)
 
 
 def translateBoardToPixelCoord(x, y):
@@ -211,20 +223,19 @@ def draw_board(board):
 def get_spaced_clicked(mousex, mousey):
     for x in range(config.getint('int_var','BOARDWIDTH')):
         for y in range(config.getint('int_var','BOARDHEIGHT')):
-            if mousex > x * config.getint('int_var','SPACESIZE') + eval(config.get('int_var','XMARGIN')) and \
-               mousex < (x + 1) * config.getint('int_var','SPACESIZE') + eval(config.get('int_var','XMARGIN')) and \
-               mousey > y * config.getint('int_var','SPACESIZE') + eval(config.get('int_var','YMARGIN')) and \
-               mousey < (y + 1) * config.getint('int_var','SPACESIZE') + eval(config.get('int_var','YMARGIN')):
-                return (x, y)
+            if x * config.getint('int_var', 'SPACESIZE') + eval(config.get('int_var', 'XMARGIN')) < mousex < (x + 1) * config.getint('int_var', 'SPACESIZE') + eval(config.get('int_var', 'XMARGIN')) and \
+                    y * config.getint('int_var', 'SPACESIZE') + eval(config.get('int_var', 'YMARGIN')) < mousey < (
+                    y + 1) * config.getint('int_var', 'SPACESIZE') + eval(config.get('int_var', 'YMARGIN')):
+                return x, y
     return None
 
 
-def draw_info(board, playerTile, computerTile, turn):
+def draw_info(board, player_tile, computer_tile, turn):
     scores = get_score_of_board(board)
-    scoreSurf = FONT.render("Player Score: %s    Computer Score: %s    %s's Turn" % (str(scores[playerTile]), str(scores[computerTile]), turn.title()), True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')))
-    scoreRect = scoreSurf.get_rect()
-    scoreRect.bottomleft = (10, config.getint('int_var','WINDOWHEIGHT') - 5)
-    DISPLAYSURF.blit(scoreSurf, scoreRect)
+    score_surf = FONT.render("Player Score: %s    Computer Score: %s    %s's Turn" % (str(scores[player_tile]), str(scores[computer_tile]), turn.title()), True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')))
+    score_rect = score_surf.get_rect()
+    score_rect.bottomleft = (10, config.getint('int_var','WINDOWHEIGHT') - 5)
+    DISPLAYSURF.blit(score_surf, score_rect)
 
 
 def resetBoard(board):
@@ -323,9 +334,9 @@ def get_score_of_board(board):
 
 
 def enter_player_tile():
-    textSurf = FONT.render('Do you want to be white or black?', True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')), (config.getint('TEXTBGCOLOR1','r'),config.getint('TEXTBGCOLOR1','g'),config.getint('TEXTBGCOLOR1','b')))
-    textRect = textSurf.get_rect()
-    textRect.center = (int(config.getint('int_var','WINDOWWIDTH') / 2), int(config.getint('int_var','WINDOWHEIGHT') / 2))
+    text_surf = FONT.render('Do you want to be white or black?', True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')), (config.getint('TEXTBGCOLOR1','r'),config.getint('TEXTBGCOLOR1','g'),config.getint('TEXTBGCOLOR1','b')))
+    text_rect = text_surf.get_rect()
+    text_rect.center = (int(config.getint('int_var','WINDOWWIDTH') / 2), int(config.getint('int_var','WINDOWHEIGHT') / 2))
 
     xSurf = BIGFONT.render('White', True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')), (config.getint('TEXTBGCOLOR1','r'),config.getint('TEXTBGCOLOR1','g'),config.getint('TEXTBGCOLOR1','b')))
     xRect = xSurf.get_rect()
@@ -345,7 +356,7 @@ def enter_player_tile():
                 elif oRect.collidepoint( (mousex, mousey) ):
                     return [config.get('tiles','BLACK_TILE'), config.get('tiles','WHITE_TILE')]
 
-        DISPLAYSURF.blit(textSurf, textRect)
+        DISPLAYSURF.blit(text_surf, text_rect)
         DISPLAYSURF.blit(xSurf, xRect)
         DISPLAYSURF.blit(oSurf, oRect)
         pygame.display.update()
@@ -375,8 +386,8 @@ def is_on_corner(x, y):
            (x == config.getint('int_var','BOARDWIDTH') and y == config.getint('int_var','BOARDHEIGHT'))
 
 
-def getComputerMove(board, computerTile):
-    possibleMoves = get_valid_moves(board, computerTile)
+def getComputerMove(board, computer_tile):
+    possibleMoves = get_valid_moves(board, computer_tile)
 
     random.shuffle(possibleMoves)
 
@@ -387,8 +398,8 @@ def getComputerMove(board, computerTile):
     bestScore = -1
     for x, y in possibleMoves:
         dupe_board = copy.deepcopy(board)
-        make_move(dupe_board, computerTile, x, y)
-        score = get_score_of_board(dupe_board)[computerTile]
+        make_move(dupe_board, computer_tile, x, y)
+        score = get_score_of_board(dupe_board)[computer_tile]
         if score > bestScore:
             bestMove = [x, y]
             bestScore = score
