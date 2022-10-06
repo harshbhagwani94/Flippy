@@ -14,94 +14,94 @@ def main():
     FONT = pygame.font.Font('freesansbold.ttf', 16)
     BIGFONT = pygame.font.Font('freesansbold.ttf', 32)
 
-    boardImage = pygame.image.load('flippyboard.png')
-    boardImage = pygame.transform.smoothscale(boardImage, (config.getint('int_var','BOARDWIDTH') * config.getint('int_var','SPACESIZE'), config.getint('int_var','BOARDHEIGHT') * config.getint('int_var','SPACESIZE')))
-    boardImageRect = boardImage.get_rect()
-    boardImageRect.topleft = (eval(config.get('int_var','XMARGIN')), eval(config.get('int_var','YMARGIN')))
+    board_image = pygame.image.load('flippyboard.png')
+    board_image = pygame.transform.smoothscale(board_image, (config.getint('int_var','BOARDWIDTH') * config.getint('int_var','SPACESIZE'), config.getint('int_var','BOARDHEIGHT') * config.getint('int_var','SPACESIZE')))
+    board_image_rect = board_image.get_rect()
+    board_image_rect.topleft = (eval(config.get('int_var','XMARGIN')), eval(config.get('int_var','YMARGIN')))
     BGIMAGE = pygame.image.load('flippybackground.png')
     BGIMAGE = pygame.transform.smoothscale(BGIMAGE, (config.getint('int_var','WINDOWWIDTH'), config.getint('int_var','WINDOWHEIGHT')))
-    BGIMAGE.blit(boardImage, boardImageRect)
+    BGIMAGE.blit(board_image, board_image_rect)
 
     while True:
-        if runGame() == False:
+        if run_game() == False:
             break
 
 
-def runGame():
+def run_game():
 
-    mainBoard = getNewBoard()
+    mainBoard = get_new_board()
     resetBoard(mainBoard)
     showHints = False
     turn = random.choice(['computer', 'player'])
 
-    drawBoard(mainBoard)
-    playerTile, computerTile = enterPlayerTile()
+    draw_board(mainBoard)
+    playerTile, computerTile = enter_player_tile()
 
-    newGameSurf = FONT.render('New Game', True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')), (config.getint('TEXTBGCOLOR2','r'),config.getint('TEXTBGCOLOR2','g'),config.getint('TEXTBGCOLOR2','b')))
-    newGameRect = newGameSurf.get_rect()
-    newGameRect.topright = (config.getint('int_var','WINDOWWIDTH') - 8, 10)
+    new_game_surf = FONT.render('New Game', True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')), (config.getint('TEXTBGCOLOR2','r'),config.getint('TEXTBGCOLOR2','g'),config.getint('TEXTBGCOLOR2','b')))
+    new_game_rect = new_game_surf.get_rect()
+    new_game_rect.topright = (config.getint('int_var','WINDOWWIDTH') - 8, 10)
     hintsSurf = FONT.render('Hints', True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')), (config.getint('TEXTBGCOLOR2','r'),config.getint('TEXTBGCOLOR2','g'),config.getint('TEXTBGCOLOR2','b')))
     hintsRect = hintsSurf.get_rect()
     hintsRect.topright = (config.getint('int_var','WINDOWWIDTH') - 8, 40)
 
     while True:
         if turn == 'player':
-            if getValidMoves(mainBoard, playerTile) == []:
+            if get_valid_moves(mainBoard, playerTile) == []:
                 break
             movexy = None
             while movexy == None:
 
                 if showHints:
-                    boardToDraw = getBoardWithValidMoves(mainBoard, playerTile)
+                    boardToDraw = get_board_with_valid_moves(mainBoard, playerTile)
                 else:
                     boardToDraw = mainBoard
 
-                checkForQuit()
+                check_for_quit()
                 for event in pygame.event.get(): # event handling loop
                     if event.type == MOUSEBUTTONUP:
                         mousex, mousey = event.pos
-                        if newGameRect.collidepoint( (mousex, mousey) ):
+                        if new_game_rect.collidepoint( (mousex, mousey) ):
                             return True
                         elif hintsRect.collidepoint( (mousex, mousey) ):
                             showHints = not showHints
-                        movexy = getSpaceClicked(mousex, mousey)
-                        if movexy != None and not isValidMove(mainBoard, playerTile, movexy[0], movexy[1]):
+                        movexy = get_spaced_clicked(mousex, mousey)
+                        if movexy != None and not is_valid_move(mainBoard, playerTile, movexy[0], movexy[1]):
                             movexy = None
 
-                drawBoard(boardToDraw)
-                drawInfo(boardToDraw, playerTile, computerTile, turn)
+                draw_board(boardToDraw)
+                draw_info(boardToDraw, playerTile, computerTile, turn)
 
-                DISPLAYSURF.blit(newGameSurf, newGameRect)
+                DISPLAYSURF.blit(new_game_surf, new_game_rect)
                 DISPLAYSURF.blit(hintsSurf, hintsRect)
 
                 MAINCLOCK.tick(config.getint('int_var','FPS'))
                 pygame.display.update()
 
-            makeMove(mainBoard, playerTile, movexy[0], movexy[1], True)
-            if getValidMoves(mainBoard, computerTile) != []:
+            make_move(mainBoard, playerTile, movexy[0], movexy[1], True)
+            if get_valid_moves(mainBoard, computerTile) != []:
                 turn = 'computer'
 
         else:
-            if getValidMoves(mainBoard, computerTile) == []:
+            if get_valid_moves(mainBoard, computerTile) == []:
                 break
 
-            drawBoard(mainBoard)
-            drawInfo(mainBoard, playerTile, computerTile, turn)
+            draw_board(mainBoard)
+            draw_info(mainBoard, playerTile, computerTile, turn)
 
-            DISPLAYSURF.blit(newGameSurf, newGameRect)
+            DISPLAYSURF.blit(new_game_surf, new_game_rect)
             DISPLAYSURF.blit(hintsSurf, hintsRect)
 
-            pauseUntil = time.time() + random.randint(5, 15) * 0.1
-            while time.time() < pauseUntil:
+            pause_until = time.time() + random.randint(5, 15) * 0.1
+            while time.time() < pause_until:
                 pygame.display.update()
 
             x, y = getComputerMove(mainBoard, computerTile)
-            makeMove(mainBoard, computerTile, x, y, True)
-            if getValidMoves(mainBoard, playerTile) != []:
+            make_move(mainBoard, computerTile, x, y, True)
+            if get_valid_moves(mainBoard, playerTile) != []:
                 turn = 'player'
 
-    drawBoard(mainBoard)
-    scores = getScoreOfBoard(mainBoard)
+    draw_board(mainBoard)
+    scores = get_score_of_board(mainBoard)
 
     if scores[playerTile] > scores[computerTile]:
         text = 'You beat the computer by %s points! Congratulations!' % \
@@ -131,7 +131,7 @@ def runGame():
     noRect.center = (int(config.getint('int_var','WINDOWWIDTH') / 2) + 60, int(config.getint('int_var','WINDOWHEIGHT') / 2) + 90)
 
     while True:
-        checkForQuit()
+        check_for_quit()
         for event in pygame.event.get():
             if event.type == MOUSEBUTTONUP:
                 mousex, mousey = event.pos
@@ -151,7 +151,7 @@ def translateBoardToPixelCoord(x, y):
     return eval(config.get('int_var','XMARGIN')) + x * config.getint('int_var','SPACESIZE') + int(config.getint('int_var','SPACESIZE') / 2), eval(config.get('int_var','YMARGIN')) + y * config.getint('int_var','SPACESIZE') + int(config.getint('int_var','SPACESIZE') / 2)
 
 
-def animateTileChange(tilesToFlip, tileColor, additionalTile):
+def animateTileChange(tiles_to_flip, tileColor, additionalTile):
     if tileColor == config.get('tiles','WHITE_TILE'):
         additionalTileColor = (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b'))
     else:
@@ -171,15 +171,15 @@ def animateTileChange(tilesToFlip, tileColor, additionalTile):
         elif tileColor == config.get('tiles','BLACK_TILE'):
             color = tuple([255 - rgbValues] * 3)
 
-        for x, y in tilesToFlip:
+        for x, y in tiles_to_flip:
             centerx, centery = translateBoardToPixelCoord(x, y)
             pygame.draw.circle(DISPLAYSURF, color, (centerx, centery), int(config.getint('int_var','SPACESIZE') / 2) - 4)
         pygame.display.update()
         MAINCLOCK.tick(config.getint('int_var','FPS'))
-        checkForQuit()
+        check_for_quit()
 
 
-def drawBoard(board):
+def draw_board(board):
     DISPLAYSURF.blit(BGIMAGE, BGIMAGE.get_rect())
 
     for x in range(config.getint('int_var','BOARDWIDTH') + 1):
@@ -208,7 +208,7 @@ def drawBoard(board):
                 pygame.draw.rect(DISPLAYSURF, (config.getint('HINTCOLOR','r'),config.getint('HINTCOLOR','g'),config.getint('HINTCOLOR','b')), (centerx - 4, centery - 4, 8, 8))
 
 
-def getSpaceClicked(mousex, mousey):
+def get_spaced_clicked(mousex, mousey):
     for x in range(config.getint('int_var','BOARDWIDTH')):
         for y in range(config.getint('int_var','BOARDHEIGHT')):
             if mousex > x * config.getint('int_var','SPACESIZE') + eval(config.get('int_var','XMARGIN')) and \
@@ -219,8 +219,8 @@ def getSpaceClicked(mousex, mousey):
     return None
 
 
-def drawInfo(board, playerTile, computerTile, turn):
-    scores = getScoreOfBoard(board)
+def draw_info(board, playerTile, computerTile, turn):
+    scores = get_score_of_board(board)
     scoreSurf = FONT.render("Player Score: %s    Computer Score: %s    %s's Turn" % (str(scores[playerTile]), str(scores[computerTile]), turn.title()), True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')))
     scoreRect = scoreSurf.get_rect()
     scoreRect.bottomleft = (10, config.getint('int_var','WINDOWHEIGHT') - 5)
@@ -238,7 +238,7 @@ def resetBoard(board):
     board[4][4] = config.get('tiles','WHITE_TILE')
 
 
-def getNewBoard():
+def get_new_board():
     board = []
     for i in range(config.getint('int_var','BOARDWIDTH')):
         board.append([config.get('tiles','EMPTY_SPACE')] * config.getint('int_var','BOARDHEIGHT'))
@@ -246,8 +246,8 @@ def getNewBoard():
     return board
 
 
-def isValidMove(board, tile, xstart, ystart):
-    if board[xstart][ystart] != config.get('tiles','EMPTY_SPACE') or not isOnBoard(xstart, ystart):
+def is_valid_move(board, tile, xstart, ystart):
+    if board[xstart][ystart] != config.get('tiles','EMPTY_SPACE') or not is_on_board(xstart, ystart):
         return False
 
     board[xstart][ystart] = tile
@@ -257,22 +257,22 @@ def isValidMove(board, tile, xstart, ystart):
     else:
         otherTile = config.get('tiles','WHITE_TILE')
 
-    tilesToFlip = []
+    tiles_to_flip = []
     for xdirection, ydirection in [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]:
         x, y = xstart, ystart
         x += xdirection
         y += ydirection
-        if isOnBoard(x, y) and board[x][y] == otherTile:
+        if is_on_board(x, y) and board[x][y] == otherTile:
             x += xdirection
             y += ydirection
-            if not isOnBoard(x, y):
+            if not is_on_board(x, y):
                 continue
             while board[x][y] == otherTile:
                 x += xdirection
                 y += ydirection
-                if not isOnBoard(x, y):
+                if not is_on_board(x, y):
                     break
-            if not isOnBoard(x, y):
+            if not is_on_board(x, y):
                 continue
             if board[x][y] == tile:
                 while True:
@@ -280,37 +280,37 @@ def isValidMove(board, tile, xstart, ystart):
                     y -= ydirection
                     if x == xstart and y == ystart:
                         break
-                    tilesToFlip.append([x, y])
+                    tiles_to_flip.append([x, y])
 
     board[xstart][ystart] = config.get('tiles','EMPTY_SPACE')
-    if len(tilesToFlip) == 0:
+    if len(tiles_to_flip) == 0:
         return False
-    return tilesToFlip
+    return tiles_to_flip
 
 
-def isOnBoard(x, y):
+def is_on_board(x, y):
     return x >= 0 and x < config.getint('int_var','BOARDWIDTH') and y >= 0 and y < config.getint('int_var','BOARDHEIGHT')
 
 
-def getBoardWithValidMoves(board, tile):
-    dupeBoard = copy.deepcopy(board)
+def get_board_with_valid_moves(board, tile):
+    dupe_board = copy.deepcopy(board)
 
-    for x, y in getValidMoves(dupeBoard, tile):
-        dupeBoard[x][y] = config.get('tiles','HINT_TILE')
-    return dupeBoard
+    for x, y in get_valid_moves(dupe_board, tile):
+        dupe_board[x][y] = config.get('tiles','HINT_TILE')
+    return dupe_board
 
 
-def getValidMoves(board, tile):
+def get_valid_moves(board, tile):
     validMoves = []
 
     for x in range(config.getint('int_var','BOARDWIDTH')):
         for y in range(config.getint('int_var','BOARDHEIGHT')):
-            if isValidMove(board, tile, x, y) != False:
+            if is_valid_move(board, tile, x, y) != False:
                 validMoves.append((x, y))
     return validMoves
 
 
-def getScoreOfBoard(board):
+def get_score_of_board(board):
     xscore = 0
     oscore = 0
     for x in range(config.getint('int_var','BOARDWIDTH')):
@@ -322,7 +322,7 @@ def getScoreOfBoard(board):
     return {config.get('tiles','WHITE_TILE'):xscore, config.get('tiles','BLACK_TILE'):oscore}
 
 
-def enterPlayerTile():
+def enter_player_tile():
     textSurf = FONT.render('Do you want to be white or black?', True, (config.getint('TEXTCOLOR','r'),config.getint('TEXTCOLOR','g'),config.getint('TEXTCOLOR','b')), (config.getint('TEXTBGCOLOR1','r'),config.getint('TEXTBGCOLOR1','g'),config.getint('TEXTBGCOLOR1','b')))
     textRect = textSurf.get_rect()
     textRect.center = (int(config.getint('int_var','WINDOWWIDTH') / 2), int(config.getint('int_var','WINDOWHEIGHT') / 2))
@@ -336,7 +336,7 @@ def enterPlayerTile():
     oRect.center = (int(config.getint('int_var','WINDOWWIDTH') / 2) + 60, int(config.getint('int_var','WINDOWHEIGHT') / 2) + 40)
 
     while True:
-        checkForQuit()
+        check_for_quit()
         for event in pygame.event.get():
             if event.type == MOUSEBUTTONUP:
                 mousex, mousey = event.pos
@@ -352,23 +352,23 @@ def enterPlayerTile():
         MAINCLOCK.tick(config.getint('int_var','FPS'))
 
 
-def makeMove(board, tile, xstart, ystart, realMove=False):
-    tilesToFlip = isValidMove(board, tile, xstart, ystart)
+def make_move(board, tile, xstart, ystart, realMove=False):
+    tiles_to_flip = is_valid_move(board, tile, xstart, ystart)
 
-    if tilesToFlip == False:
+    if tiles_to_flip == False:
         return False
 
     board[xstart][ystart] = tile
 
     if realMove:
-        animateTileChange(tilesToFlip, tile, (xstart, ystart))
+        animateTileChange(tiles_to_flip, tile, (xstart, ystart))
 
-    for x, y in tilesToFlip:
+    for x, y in tiles_to_flip:
         board[x][y] = tile
     return True
 
 
-def isOnCorner(x, y):
+def is_on_corner(x, y):
     return (x == 0 and y == 0) or \
            (x == config.getint('int_var','BOARDWIDTH') and y == 0) or \
            (x == 0 and y == config.getint('int_var','BOARDHEIGHT')) or \
@@ -376,26 +376,26 @@ def isOnCorner(x, y):
 
 
 def getComputerMove(board, computerTile):
-    possibleMoves = getValidMoves(board, computerTile)
+    possibleMoves = get_valid_moves(board, computerTile)
 
     random.shuffle(possibleMoves)
 
     for x, y in possibleMoves:
-        if isOnCorner(x, y):
+        if is_on_corner(x, y):
             return [x, y]
 
     bestScore = -1
     for x, y in possibleMoves:
-        dupeBoard = copy.deepcopy(board)
-        makeMove(dupeBoard, computerTile, x, y)
-        score = getScoreOfBoard(dupeBoard)[computerTile]
+        dupe_board = copy.deepcopy(board)
+        make_move(dupe_board, computerTile, x, y)
+        score = get_score_of_board(dupe_board)[computerTile]
         if score > bestScore:
             bestMove = [x, y]
             bestScore = score
     return bestMove
 
 
-def checkForQuit():
+def check_for_quit():
     for event in pygame.event.get((QUIT, KEYUP)): # event handling loop
         if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE):
             pygame.quit()
