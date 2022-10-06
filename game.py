@@ -293,11 +293,11 @@ def is_on_board(x, y):
 
 
 def get_board_with_valid_moves(board, tile):
-    dupeBoard = copy.deepcopy(board)
+    dupe_board = copy.deepcopy(board)
 
-    for x, y in get_valid_moves(dupeBoard, tile):
-        dupeBoard[x][y] = config.get('tiles','HINT_TILE')
-    return dupeBoard
+    for x, y in get_valid_moves(dupe_board, tile):
+        dupe_board[x][y] = config.get('tiles','HINT_TILE')
+    return dupe_board
 
 
 def get_valid_moves(board, tile):
@@ -386,9 +386,9 @@ def getComputerMove(board, computerTile):
 
     bestScore = -1
     for x, y in possibleMoves:
-        dupeBoard = copy.deepcopy(board)
-        make_move(dupeBoard, computerTile, x, y)
-        score = get_score_of_board(dupeBoard)[computerTile]
+        dupe_board = copy.deepcopy(board)
+        make_move(dupe_board, computerTile, x, y)
+        score = get_score_of_board(dupe_board)[computerTile]
         if score > bestScore:
             bestMove = [x, y]
             bestScore = score
